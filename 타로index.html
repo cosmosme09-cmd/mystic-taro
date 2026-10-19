@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로열 타로 점술소 (켈틱 크로스 추가)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Gowun Batang', serif;
+            background: radial-gradient(circle at center, #2e0854 0%, #150228 60%, #080012 100%);
+            color: #fff8e7;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 15px;
+            user-select: none;
+            overflow-x: hidden;
+            overflow-y: scroll;
+            position: relative;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(white 1px, transparent 0);
+            background-size: 50px 50px;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 680px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: #ffd700;
+            text-shadow: 0 0 10px #ffd700, 0 0 20px #9b59b6;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+
+        .mode-container {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            background: rgba(30, 5, 56, 0.8);
+            color: #e8d5ff;
+            border: 1px solid #ffd700;
+            padding: 8px 14px;
+            font-size: 0.88rem;
+            font-family: 'Gowun Batang', serif;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #ffe066, #f39c12);
+            color: #1a0033;
+            font-weight: bold;
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+        }
+
+        .guide {
+            font-size: 1.05rem;
+            color: #e8d5ff;
+            height: 24px;
+            text-shadow: 0 0 8px rgba(155, 89, 182, 0.6);
+            margin-bottom: 15px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .question-box {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .question-box input {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 1px solid #ffd700;
+            background: rgba(20, 5, 40, 0.8);
+            color: #fff8e7;
+            font-family: 'Gowun Batang', serif;
+            font-size: 0.95rem;
+            outline: none;
+            box-shadow: inset 0 0 8px rgba(255, 215, 0, 0.2);
+            text-align: center;
+        }
+
+        .question-box input::placeholder {
+            color: #bfa1db;
+        }
+
+        .slots-container {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 20px;
+            min-height: 160px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .slot {
+            width: 85px;
+            height: 140px;
+            border: 2px dashed #ffd700;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: rgba(46, 8, 84, 0.4);
+            box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.15), 0 0 15px rgba(142, 68, 173, 0.3);
+        }
+
+        .slot-label {
+            position: absolute;
+            top: -22px;
+            font-weight: bold;
+            color: #ffd700;
+            font-size: 0.78rem;
+            text-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+            white-space: nowrap;
+        }
+
+        .circle-deck-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 10px 0 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .crystal-ball {
+            position: absolute;
+            width: 85px;
+            height: 85px;
+            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #da70d6 40%, #4b0082 80%);
+            border-radius: 50%;
+            box-shadow: 0 0 25px rgba(218, 112, 214, 0.8), inset 0 0 15px rgba(255, 255, 255, 0.8);
+            z-index: 1;
+            animation: pulseBall 3s infinite alternate;
+        }
+
+        @keyframes pulseBall {
+            0% { transform: scale(0.95); box-shadow: 0 0 20px rgba(218, 112, 214, 0.6); }
+            100% { transform: scale(1.05); box-shadow: 0 0 35px rgba(255, 215, 0, 0.8); }
+        }
+
+        .card {
+            width: 80px;
+            height: 135px;
+            position: absolute;
+            border-radius: 8px;
+            border: 2px solid #ffd700;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.4s ease, box-shadow 0.3s ease;
+            box-shadow: 0 0 10px rgba(0,0,0,0.8);
+            z-index: 2;
+        }
+
+        .card-in-deck:hover {
+            z-index: 300 !important;
+            box-shadow: 0 0 20px #ffd700, 0 0 15px #9b59b6;
+        }
+
+        .card-back-design {
+            width: 100%; height: 100%;
+            background: radial-gradient(circle, #5b2c91 0%, #20083b 100%);
+            border-radius: 6px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            backface-visibility: hidden;
+        }
+
+        .card-back-design::before { content: "⚜️"; font-size: 1rem; margin-bottom: 3px; }
+        .card-back-design::after { content: "🔮"; font-size: 1.4rem; }
+
+        .card-front-design {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(180deg, #320a5c 0%, #120324 100%);
+            border-radius: 6px;
+            backface-visibility: hidden;
+            transform: rotateY(180deg);
+            display: flex; flex-direction: column;
+            align-items: center; padding: 5px;
+            text-align: center;
+        }
+
+        .card-front-design img {
+            width: 100%; height: 85px;
+            object-fit: cover; border-radius: 4px;
+            border: 1px solid #ffd700;
+            transition: transform 0.5s ease;
+        }
+
+        .card.reversed .card-front-design img {
+            transform: rotate(180deg);
+        }
+
+        .card-title {
+            font-size: 0.58rem;
+            color: #ffd700;
+            font-weight: bold;
+            margin-top: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg) !important;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .btn-main {
+            background: linear-gradient(135deg, #ffe066 0%, #f39c12 50%, #d4af37 100%);
+            color: #1a0033;
+            border: none;
+            padding: 10px 22px;
+            font-size: 0.95rem;
+            font-family: 'Gowun Batang', serif;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+        }
+
+        .btn-main:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #ffd700;
+        }
+
+        .btn-danger {
+            background: rgba(180, 40, 40, 0.8);
+            color: #fff;
+            border: 1px solid #ff7777;
+            padding: 10px 18px;
+            font-size: 0.9rem;
+            font-family: 'Gowun Batang', serif;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-danger:hover {
+            background: rgba(220, 50, 50, 0.95);
+        }
+
+        .history-container {
+            width: 100%;
+            max-width: 680px;
+            margin: 25px auto 40px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        @keyframes resultFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-box {
+            width: 100%;
+            max-width: 680px;
+            margin: 0 auto;
+            background: rgba(22, 6, 42, 0.95);
+            border: 2px solid #ffd700;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 0 25px rgba(155, 89, 182, 0.4);
+            animation: resultFadeIn 0.8s forwards;
+            position: relative;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed #ffd700;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+        }
+
+        .result-title {
+            color: #ffd700;
+            font-size: 1.15rem;
+            font-weight: bold;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .btn-share {
+            background: rgba(255, 215, 0, 0.15);
+            color: #ffd700;
+            border: 1px solid #ffd700;
+            padding: 5px 10px;
+            font-size: 0.78rem;
+            font-family: 'Gowun Batang', serif;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            white-space: nowrap;
+        }
+
+        .btn-share:hover {
+            background: #ffd700;
+            color: #1a0033;
+            font-weight: bold;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 5px;
+        }
+
+        .chat-row-user {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .chat-bubble-user {
+            background: #ffe877;
+            color: #1a0033;
+            padding: 10px 14px;
+            border-radius: 14px 14px 2px 14px;
+            font-size: 0.92rem;
+            font-weight: bold;
+            max-width: 82%;
+            line-height: 1.4;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            word-break: break-word;
+        }
+
+        .chat-row-master {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .master-avatar {
+            width: 38px;
+            height: 38px;
+            background: radial-gradient(circle, #ffd700 0%, #9b59b6 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            border: 1.5px solid #ffd700;
+            flex-shrink: 0;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+        }
+
+        .chat-content-master {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-width: 85%;
+        }
+
+        .master-name {
+            font-size: 0.78rem;
+            color: #ffd700;
+            font-weight: bold;
+            margin-left: 2px;
+        }
+
+        .chat-bubble-master {
+            background: rgba(50, 15, 85, 0.9);
+            border: 1px solid #c084fc;
+            color: #fff3b0;
+            padding: 12px 14px;
+            border-radius: 2px 14px 14px 14px;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .chat-bubble-summary {
+            background: rgba(80, 20, 120, 0.95);
+            border: 1.5px solid #ffd700;
+            color: #ffffff;
+            padding: 14px 16px;
+            border-radius: 2px 14px 14px 14px;
+            font-size: 0.93rem;
+            line-height: 1.6;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .chat-card-thumb {
+            width: 42px;
+            height: 68px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #ffd700;
+            flex-shrink: 0;
+        }
+
+        .chat-card-text-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            text-align: left;
+        }
+
+        .tag-reversed { color: #ff7777; font-weight: bold; margin-left: 4px; }
+        .tag-upright { color: #77ff99; font-weight: bold; margin-left: 4px; }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffd700;
+            color: #1a0033;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+            z-index: 1000;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, 10px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stars"></div>
+
+    <div class="app-container">
+        <header>
+            <h1>✨MYSTIC TAROT✨</h1>
+            <div class="mode-container">
+                <button class="mode-btn" id="mode-1" onclick="switchMode(1)">☀️ 오늘의 운세 (1장)</button>
+                <button class="mode-btn active" id="mode-3" onclick="switchMode(3)">🔮 과거·현재·미래 (3장)</button>
+                <button class="mode-btn" id="mode-10" onclick="switchMode(10)">⚔️ 켈틱 크로스 (10장)</button>
+            </div>
+            <div class="guide" id="guide-text">원형 카드 중 [과거]를 의미하는 카드를 선택하세요.</div>
+        </header>
+
+        <div class="question-box">
+            <input type="text" id="user-question" placeholder="마음속 고민이나 질문을 적어보세요 (선택사항)">
+        </div>
+
+        <div class="slots-container" id="slots-area"></div>
+
+        <div class="circle-deck-container" id="deck">
+            <div class="crystal-ball"></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-main" onclick="initGame()">🃏 카드 다시 섞기</button>
+            <button class="btn-danger" onclick="clearHistory()">🗑️ 리딩 기록 지우기</button>
+        </div>
+
+        <div class="history-container" id="history-box"></div>
+    </div>
+
+    <div class="toast" id="toast-msg">📋 메시지가 복사되었습니다!</div>
+
+    <script>
+        const majorArcana = [
+            { name: "0. 바보 (The Fool)", desc: "새로운 시작, 순수한 모험, 용기 있는 도전의 시기입니다.", img: "https://upload.wikimedia.org/wikipedia/commons/9/90/RWS_Tarot_00_Fool.jpg" },
+            { name: "I. 마법사 (The Magician)", desc: "모든 재능과 능력을 발휘하여 원하는 결과를 이끌어냅니다.", img: "https://upload.wikimedia.org/wikipedia/commons/d/de/RWS_Tarot_01_Magician.jpg" },
+            { name: "II. 여사제 (The High Priestess)", desc: "깊은 직관과 내면의 소리에 귀 기울일 때 깨달음을 얻습니다.", img: "https://upload.wikimedia.org/wikipedia/commons/8/88/RWS_Tarot_02_High_Priestess.jpg" },
+            { name: "III. 여황제 (The Empress)", desc: "풍요로움, 마음의 평화, 그리고 기분 좋은 결실을 누립니다.", img: "https://upload.wikimedia.org/wikipedia/commons/d/d2/RWS_Tarot_03_Empress.jpg" },
+            { name: "IV. 황제 (The Emperor)", desc: "확고한 리더십, 질서, 안정된 기반을 다지게 됩니다.", img: "https://upload.wikimedia.org/wikipedia/commons/c/c3/RWS_Tarot_04_Emperor.jpg" },
+            { name: "V. 교황 (The Hierophant)", desc: "귀인의 조언, 신뢰할 수 있는 협력과 전통의 준수입니다.", img: "https://upload.wikimedia.org/wikipedia/commons/8/8d/RWS_Tarot_05_Hierophant.jpg" },
+            { name: "VI. 연인 (The Lovers)", desc: "조화로운 인연, 진실한 사랑, 중요한 가치관의 일치입니다.", img: "https://upload.wikimedia.org/wikipedia/commons/3/3a/TheLovers.jpg" },
+            { name: "VII. 전차 (The Chariot)", desc: "강한 의지와 추진력으로 장애물을 극복하고 승리합니다.", img: "https://upload.wikimedia.org/wikipedia/commons/9/9b/RWS_Tarot_07_Chariot.jpg" },
+            { name: "VIII. 힘 (Strength)", desc: "내면의 인내와 온화함으로 상황을 부드럽게 지배합니다.", img: "https://upload.wikimedia.org/wikipedia/commons/f/f5/RWS_Tarot_08_Strength.jpg" },
+            { name: "IX. 은둔자 (The Hermit)", desc: "깊은 성찰, 내면의 탐구, 지혜로운 답을 찾는 시간입니다.", img: "https://upload.wikimedia.org/wikipedia/commons/4/4d/RWS_Tarot_09_Hermit.jpg" },
+            { name: "X. 운명의 수레바퀴", desc: "행운의 기회가 찾아오며 긍정적인 반전이 일어납니다.", img: "https://upload.wikimedia.org/wikipedia/commons/3/3c/RWS_Tarot_10_Wheel_of_Fortune.jpg" },
+            { name: "XI. 정의 (Justice)", desc: "공정하고 객관적인 판단, 명확한 균형을 뜻합니다.", img: "https://upload.wikimedia.org/wikipedia/commons/e/e0/RWS_Tarot_11_Justice.jpg" },
+            { name: "XII. 매달린 사람 (The Hanged Man)", desc: "관점의 전환, 기꺼이 치르는 희생과 성찰입니다.", img: "https://upload.wikimedia.org/wikipedia/commons/2/2b/RWS_Tarot_12_Hanged_Man.jpg" },
+            { name: "XIII. 죽음 (Death)", desc: "낡은 것의 완벽한 끝과 더 나은 새로운 시작입니다.", img: "https://upload.wikimedia.org/wikipedia/commons/d/d7/RWS_Tarot_13_Death.jpg" },
+            { name: "XIV. 절제 (Temperance)", desc: "서로 다른 요소의 조화로운 융합과 평정심 유지입니다.", img: "https://upload.wikimedia.org/wikipedia/commons/f/f8/RWS_Tarot_14_Temperance.jpg" },
+            { name: "XV. 악마 (The Devil)", desc: "강한 유혹과 집착, 속박에서의 깨달음이 필요합니다.", img: "https://upload.wikimedia.org/wikipedia/commons/5/55/RWS_Tarot_15_Devil.jpg" },
+            { name: "XVI. 탑 (The Tower)", desc: "갑작스러운 일상의 변화와 새로운 신념의 형성입니다.", img: "https://upload.wikimedia.org/wikipedia/commons/5/53/RWS_Tarot_16_Tower.jpg" },
+            { name: "XVII. 별 (The Star)", desc: "희망과 영감, 어둠을 밝히는 순수한 비전과 치유입니다.", img: "https://upload.wikimedia.org/wikipedia/commons/d/db/RWS_Tarot_17_Star.jpg" },
+            { name: "XVIII. 달 (The Moon)", desc: "불안감, 환상, 직관에 귀를 기울여야 할 시기입니다.", img: "https://upload.wikimedia.org/wikipedia/commons/7/7f/RWS_Tarot_18_Moon.jpg" },
+            { name: "XIX. 태양 (The Sun)", desc: "명쾌한 성공과 큰 기쁨, 에너지로 가득 찬 시간입니다.", img: "https://upload.wikimedia.org/wikipedia/commons/9/91/RWS_Tarot_19_Sun.jpg" },
+            { name: "XX. 심판 (Judgement)", desc: "과거의 결실, 정당한 평가, 새로운 부름을 받습니다.", img: "https://upload.wikimedia.org/wikipedia/commons/d/dd/RWS_Tarot_20_Judgement.jpg" },
+            { name: "XXI. 세계 (The World)", desc: "목표의 완벽한 달성, 통합, 새로운 차원으로의 진입입니다.", img: "https://upload.wikimedia.org/wikipedia/commons/ff/ff/RWS_Tarot_21_World.jpg" }
+        ];
+
+        const suitsInfo = [
+            { suit: "완즈 (Wands)", theme: "열정과 창의력, 실행력", img: "https://upload.wikimedia.org/wikipedia/commons/1/11/Wands01.jpg" },
+            { suit: "컵 (Cups)", theme: "감정과 인간관계, 사랑", img: "https://upload.wikimedia.org/wikipedia/commons/3/36/Cups01.jpg" },
+            { suit: "소드 (Swords)", theme: "이성과 결단, 지혜", img: "https://upload.wikimedia.org/wikipedia/commons/1/1a/Swords01.jpg" },
+            { suit: "펜타클 (Pentacles)", theme: "물질적 결실, 현실적 기반", img: "https://upload.wikimedia.org/wikipedia/commons/fd/fd/Penta01.jpg" }
+        ];
+
+        const rankNames = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Page", "Knight", "Queen", "King"];
+
+        const tarotDatabase = [];
+
+        majorArcana.forEach(m => {
+            tarotDatabase.push({
+                name: m.name,
+                upright: m.desc,
+                reversed: `[역방향] ${m.desc} 단, 지나친 조급함이나 주저함을 주의하세요.`,
+                img: m.img
+            });
+        });
+
+        suitsInfo.forEach(s => {
+            rankNames.forEach(rank => {
+                tarotDatabase.push({
+                    name: `${s.suit} ${rank}`,
+                    upright: `${s.theme}을(를) 상징하는 ${rank} 카드입니다.`,
+                    reversed: `[역방향] ${s.theme} 측면에서 신중한 정비가 필요합니다.`,
+                    img: s.img
+                });
+            });
+        });
+
+        let currentMode = 3; 
+        let selectStep = 0; 
+        let chosenCards = [];
+        let slotNames = ["과거", "현재", "미래"];
+
+        const celticNames = [
+            "1. 현재 상황", "2. 방해물/과제", "3. 표면적 목표", "4. 지나간 과거", 
+            "5. 가까운 미래", "6. 본인의 마음", "7. 주변 영향", "8. 주변 시선/환경", 
+            "9. 희망과 두려움", "10. 최종 결과"
+        ];
+
+        function switchMode(mode) {
+            currentMode = mode;
+            document.getElementById("mode-1").classList.toggle("active", mode === 1);
+            document.getElementById("mode-3").classList.toggle("active", mode === 3);
+            document.getElementById("mode-10").classList.toggle("active", mode === 10);
+            
+            if (mode === 1) slotNames = ["오늘의 운세"];
+            else if (mode === 3) slotNames = ["과거", "현재", "미래"];
+            else if (mode === 10) slotNames = celticNames;
+
+            initGame();
+        }
+
+        function initGame() {
+            selectStep = 0;
+            chosenCards = [];
+
+            document.getElementById("guide-text").innerText = 
+                currentMode === 1 ? "원형 카드 중 [오늘의 운세] 카드를 1장 선택하세요." :
+                currentMode === 3 ? "원형 카드 중 [과거]를 의미하는 카드를 선택하세요." :
+                "원형 카드 중 첫 번째 [현재 상황] 카드를 선택하세요.";
+
+            const slotsArea = document.getElementById("slots-area");
+            slotsArea.innerHTML = "";
+            for (let i = 0; i < currentMode; i++) {
+                const slot = document.createElement("div");
+                slot.className = "slot";
+                slot.id = `slot-${i}`;
+                slot.innerHTML = `<span class="slot-label">${slotNames[i]}</span>`;
+                slotsArea.appendChild(slot);
+            }
+
+            const deck = document.getElementById("deck");
+            const existingCards = deck.querySelectorAll(".card");
+            existingCards.forEach(c => c.remove());
+
+            const shuffled = [...tarotDatabase].sort(() => 0.5 - Math.random());
+            const totalCards = 78; 
+            const radius = 145;
+
+            for (let i = 0; i < totalCards; i++) {
+                const cardData = shuffled[i];
+                const isReversed = Math.random() < 0.5;
+
+                const card = document.createElement("div");
+                card.className = "card card-in-deck";
+                if (isReversed) card.classList.add("reversed");
+                
+                const angle = (i * (360 / totalCards)); 
+                const angleRad = (angle * Math.PI) / 180;
+
+                const x = Math.round(radius * Math.cos(angleRad));
+                const y = Math.round(radius * Math.sin(angleRad));
+
+                const baseTransform = `translate(${x}px, ${y}px) rotate(${angle + 90}deg)`;
+                card.style.transform = baseTransform;
+                card.style.zIndex = i + 2;
+
+                const hoverX = Math.round((radius + 20) * Math.cos(angleRad));
+                const hoverY = Math.round((radius + 20) * Math.sin(angleRad));
+                const hoverTransform = `translate(${hoverX}px, ${hoverY}px) rotate(${angle + 90}deg) scale(1.15)`;
+
+                card.onmouseenter = () => {
+                    if (!card.classList.contains("selected")) {
+                        card.style.transform = hoverTransform;
+                    }
+                };
+                card.onmouseleave = () => {
+                    if (!card.classList.contains("selected")) {
+                        card.style.transform = baseTransform;
+                    }
+                };
+
+                const reversedTag = isReversed ? " (역)" : "";
+
+                card.innerHTML = `
+                    <div class="card-back-design"></div>
+                    <div class="card-front-design">
+                        <img src="${cardData.img}">
+                        <div class="card-title">${cardData.name}${reversedTag}</div>
+                    </div>
+                `;
+
+                card.onclick = () => selectCard(card, cardData, isReversed);
+                deck.appendChild(card);
+            }
+        }
+
+        function selectCard(cardElement, cardData, isReversed) {
+            if (selectStep >= currentMode || cardElement.classList.contains("selected")) return;
+
+            cardElement.classList.add("selected");
+            chosenCards.push({ data: cardData, isReversed: isReversed });
+
+            cardElement.onmouseenter = null;
+            cardElement.onmouseleave = null;
+
+            const currentSlot = document.getElementById(`slot-${selectStep}`);
+            cardElement.classList.remove("card-in-deck");
+            
+            currentSlot.appendChild(cardElement);
+            cardElement.style.transform = "none";
+            cardElement.style.position = "relative";
+
+            selectStep++;
+
+            if (selectStep < currentMode) {
+                document.getElementById("guide-text").innerText = `좋습니다! 이제 [${slotNames[selectStep]}] 카드를 선택해 주세요.`;
+            } else {
+                document.getElementById("guide-text").innerText = "선택이 완료되었습니다. 운명의 결과를 공개합니다!";
+                setTimeout(revealCards, 600);
+            }
+        }
+
+        function revealCards() {
+            const slots = document.querySelectorAll(".slot .card");
+            
+            slots.forEach((card, idx) => {
+                setTimeout(() => {
+                    card.classList.add("flipped");
+                }, idx * 300);
+            });
+
+            setTimeout(appendResultToHistory, currentMode * 300 + 400);
+        }
+
+        function appendResultToHistory() {
+            const historyBox = document.getElementById("history-box");
+            const userQ = document.getElementById("user-question").value.trim();
+
+            const resultCard = document.createElement("div");
+            resultCard.className = "result-box";
+
+            let chatHTML = "";
+            let shareTextContent = "";
+            let currentCardsData = [];
+
+            const modeTitle = currentMode === 1 ? "오늘의 운세" : currentMode === 3 ? "3장 점술" : "켈틱 크로스";
+
+            if (currentMode === 1) {
+                const item = chosenCards[0];
+                const dirStr = item.isReversed ? "역방향" : "정방향";
+                const desc = item.isReversed ? item.data.reversed : item.data.upright;
+
+                const questionText = userQ !== "" ? `Q. ${userQ}` : "마스터님, 오늘 저의 운세 카드는 어떤 의미인가요? 🔮";
+
+                chatHTML = `
+                    <div class="chat-row-user"><div class="chat-bubble-user">${questionText}</div></div>
+                    <div class="chat-row-master">
+                        <div class="master-avatar">🔮</div>
+                        <div class="chat-content-master">
+                            <span class="master-name">타로 마스터</span>
+                            <div class="chat-bubble-master">
+                                <img src="${item.data.img}" class="chat-card-thumb" style="${item.isReversed ? 'transform: rotate(180deg);' : ''}">
+                                <div class="chat-card-text-group">
+                                    <strong>[오늘의 운세] ${item.data.name} <span class="${item.isReversed ? 'tag-reversed' : 'tag-upright'}">(${dirStr})</span></strong>
+                                    <span>${desc}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                shareTextContent = `✨ [MYSTIC TAROT - 오늘의 운세] ✨\n` + (userQ !== "" ? `Q. "${userQ}"\n\n` : "\n") + `• ${item.data.name} (${dirStr}): ${desc}`;
+                currentCardsData.push({ label: "오늘의 운세", name: item.data.name, dir: dirStr, desc: desc });
+
+            } else {
+                shareTextContent = `✨ [MYSTIC TAROT - ${modeTitle} 리딩] ✨\n` + (userQ !== "" ? `Q. "${userQ}"\n\n` : "\n");
+
+                for (let i = 0; i < currentMode; i++) {
+                    const item = chosenCards[i];
+                    const dirStr = item.isReversed ? "역방향" : "정방향";
+                    const desc = item.isReversed ? item.data.reversed : item.data.upright;
+                    const slotLabel = slotNames[i];
+
+                    let userMsg = i === 0 ? (userQ !== "" ? `Q. "${userQ}" - 켈틱 크로스 리딩을 부탁드려요!` : `마스터님, 전체적인 흐름을 짚어주세요!`) : `다음 [${slotLabel}] 카드는 어떤 의미인가요?`;
+
+                    chatHTML += `
+                        <div class="chat-row-user"><div class="chat-bubble-user">${userMsg}</div></div>
+                        <div class="chat-row-master">
+                            <div class="master-avatar">🔮</div>
+                            <div class="chat-content-master">
+                                <span class="master-name">타로 마스터</span>
+                                <div class="chat-bubble-master">
+                                    <img src="${item.data.img}" class="chat-card-thumb" style="${item.isReversed ? 'transform: rotate(180deg);' : ''}">
+                                    <div class="chat-card-text-group">
+                                        <strong>[${slotLabel}] ${item.data.name} <span class="${item.isReversed ? 'tag-reversed' : 'tag-upright'}">(${dirStr})</span></strong>
+                                        <span>${desc}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    shareTextContent += `• [${slotLabel}] ${item.data.name} (${dirStr}): ${desc}\n`;
+                    currentCardsData.push({ label: slotLabel, name: item.data.name, dir: dirStr, desc: desc });
+                }
+
+                const finalCard = chosenCards[currentMode - 1];
+                const masterSummaryMsg = `🔮 <strong>마스터의 종합 총평:</strong><br>` +
+                    `총 ${currentMode}장의 카드가 나타내는 에너지를 종합해 볼 때, 마지막 결과인 <strong>${finalCard.data.name}</strong>의 방향으로 나아가고 있습니다. ` +
+                    `현재의 고민을 지혜롭게 풀어나간다면 원하시는 긍정적인 결실을 맞이하실 수 있을 거예요! ✨`;
+
+                chatHTML += `
+                    <div class="chat-row-master">
+                        <div class="master-avatar">🔮</div>
+                        <div class="chat-content-master">
+                            <span class="master-name">타로 마스터</span>
+                            <div class="chat-bubble-summary">${masterSummaryMsg}</div>
+                        </div>
+                    </div>
+                `;
+                shareTextContent += `\n${masterSummaryMsg.replace(/<br>/g, "\n").replace(/<\/?[^>]+(>|$)/g, "")}`;
+            }
+
+            resultCard.innerHTML = `
+                <div class="result-header">
+                    <span class="result-title">💬 ${modeTitle} 대화 리딩</span>
+                    <div class="btn-group">
+                        <button class="btn-share" onclick="downloadResultImage('${modeTitle}', '${encodeURIComponent(userQ)}', '${encodeURIComponent(JSON.stringify(currentCardsData))}')">📸 스크린샷</button>
+                        <button class="btn-share" onclick="copyResultText(\`${encodeURIComponent(shareTextContent)}\`)">📋 텍스트 복사</button>
+                    </div>
+                </div>
+                <div class="chat-container">${chatHTML}</div>
+            `;
+
+            historyBox.insertBefore(resultCard, historyBox.firstChild);
+        }
+
+        function downloadResultImage(modeTitle, encodedQ, encodedCards) {
+            const userQ = decodeURIComponent(encodedQ);
+            const cardsData = JSON.parse(decodeURIComponent(encodedCards));
+
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            const width = 600;
+            let height = 240 + (cardsData.length * 65);
+            if (userQ) height += 40;
+
+            canvas.width = width;
+            canvas.height = height;
+
+            const bgGradient = ctx.createRadialGradient(width / 2, height / 2, 10, width / 2, height / 2, width);
+            bgGradient.addColorStop(0, '#2e0854');
+            bgGradient.addColorStop(0.7, '#150228');
+            bgGradient.addColorStop(1, '#080012');
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.strokeStyle = "#ffd700";
+            ctx.lineWidth = 4;
+            ctx.strokeRect(10, 10, width - 20, height - 20);
+
+            ctx.fillStyle = "#ffd700";
+            ctx.font = "bold 22px 'Gowun Batang', serif";
+            ctx.textAlign = "center";
+            ctx.fillText(`✨ MYSTIC TAROT - ${modeTitle} 리딩 ✨`, width / 2, 50);
+
+            let currentY = 80;
+            if (userQ) {
+                ctx.fillStyle = "#e8d5ff";
+                ctx.font = "italic 16px 'Gowun Batang', serif";
+                ctx.fillText(`Q. "${userQ}"`, width / 2, currentY);
+                currentY += 35;
+            }
+
+            ctx.textAlign = "left";
+            cardsData.forEach(c => {
+                ctx.fillStyle = "#ffd700";
+                ctx.font = "bold 14px 'Gowun Batang', serif";
+                ctx.fillText(`• [${c.label}] ${c.name} (${c.dir})`, 40, currentY);
+                ctx.fillStyle = "#f3e8ff";
+                ctx.font = "12px 'Gowun Batang', serif";
+                ctx.fillText(c.desc.substring(0, 50), 40, currentY + 18);
+                currentY += 42;
+            });
+
+            const link = document.createElement("a");
+            link.download = `타로리딩_${Date.now()}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+
+            showToast("📸 리딩 결과 스크린샷이 저장되었습니다!");
+        }
+
+        function copyResultText(encodedText) {
+            const text = decodeURIComponent(encodedText);
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("📋 텍스트가 복사되었습니다!");
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById("toast-msg");
+            toast.innerText = msg;
+            toast.style.display = "block";
+            setTimeout(() => { toast.style.display = "none"; }, 2500);
+        }
+
+        function clearHistory() {
+            document.getElementById("history-box").innerHTML = "";
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
